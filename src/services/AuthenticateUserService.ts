@@ -1,17 +1,26 @@
 /**
- *  RECEBER CODE (STRING)
- *  RECUPERAR O ACCESS_TOKEN NO GITHUB
- *  RECUPERAR INFOS DO USER NO GITHUB
- *  VERIFICAR SE O USUARIO EXISTE NO DB
- *  --- SIM = GERAR UM TOKEN
- *  --- NAO = CRIA NO DB , GERA UM TOKEN
- * RETORNAR O TOKEN COM AS INFOS DO USER
+ * [x] RECEBER CODE (STRING)
+ * [x] RECUPERAR O ACCESS_TOKEN NO GITHUB
+ * [x] RECUPERAR INFOS DO USER NO GITHUB
+ * [x] VERIFICAR SE O USUARIO EXISTE NO DB
+ * [] --- SIM = GERAR UM TOKEN
+ * []--- NAO = CRIA NO DB , GERA UM TOKEN
+ * [] RETORNAR O TOKEN COM AS INFOS DO USER
  **/
 
 import axios from "axios";
+import prismaClient from '../prisma';
 
 interface IAccessTokenResponse{
     access_token:string
+
+}
+
+interface IUserResponse{
+    avatar_url:string,
+    login:string,
+    id:number,
+    name:string
 
 }
 
@@ -33,11 +42,30 @@ class AuthenticateUserService {
             }
         });
 
-        const response = await axios.get('https://api.github.com/user',{
+        const response = await axios.get<IUserResponse>('https://api.github.com/user',{
             headers:{
                 authorization: `Bearer ${accessTokenResponse.access_token}`
             }
-        })
+        });
+
+        const { login, id, avatar_url, name } = response.data;
+
+        let user = await prismaClient.user.findFirst({
+            where:{
+                github_id: id
+            }
+        });
+
+        if (!user) {
+          user =  await prismaClient.user.create({
+                data:{
+                    github_id:id,
+                    login,
+                    avatar_url,
+                    name
+                }
+            });
+        }
 
         return response.data;
     }
