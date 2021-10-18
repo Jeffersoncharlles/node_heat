@@ -1,6 +1,7 @@
 /**
  *  RECEBER CODE (STRING)
  *  RECUPERAR O ACCESS_TOKEN NO GITHUB
+ *  RECUPERAR INFOS DO USER NO GITHUB
  *  VERIFICAR SE O USUARIO EXISTE NO DB
  *  --- SIM = GERAR UM TOKEN
  *  --- NAO = CRIA NO DB , GERA UM TOKEN
@@ -9,6 +10,11 @@
 
 import axios from "axios";
 
+interface IAccessTokenResponse{
+    access_token:string
+
+}
+
 class AuthenticateUserService {
 
     async execute(code:string){
@@ -16,7 +22,7 @@ class AuthenticateUserService {
 
         //onde ta null e o body
 
-        const response = await  axios.post(url,null,{
+        const {data: accessTokenResponse} = await  axios.post<IAccessTokenResponse>(url,null,{
             params:{
                 client_id: process.env.GITHUB_CLIENT_ID,
                 client_secret: process.env.GITHUB_CLIENT_SECRET,
@@ -26,6 +32,12 @@ class AuthenticateUserService {
                 "Accept": "application/json"
             }
         });
+
+        const response = await axios.get('https://api.github.com/user',{
+            headers:{
+                authorization: `Bearer ${accessTokenResponse.access_token}`
+            }
+        })
 
         return response.data;
     }
