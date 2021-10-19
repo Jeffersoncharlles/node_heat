@@ -3,10 +3,10 @@ import { verify } from "jsonwebtoken";
 
 
 interface IPayload {
-    sub:string
+    sub: string
 }
 
-const ensureAuthenticated = (req:Request, res:Response, next: NextFunction)=>{
+const ensureAuthenticated = (req:Request, res:Response, next: NextFunction) => {
     const authToken = req.headers.authorization;
 
     if (!authToken) {
@@ -20,7 +20,7 @@ const ensureAuthenticated = (req:Request, res:Response, next: NextFunction)=>{
     const [Bearer,token] = authToken.split(" ");
 
     try {
-        const { sub } =  verify(token,process.env.JWT_SECRET_KEY) as IPayload;
+        const { sub } =  verify(token, process.env.JWT_SECRET_KEY) as IPayload;
 
         req.user_id = sub;
         return next();
