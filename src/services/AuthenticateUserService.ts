@@ -65,7 +65,7 @@ class AuthenticateUserService {
                     github_id:id,
                     login,
                     avatar_url,
-                    name:login
+                    name: (name === null) ? login : name
                 },
             })
         }
