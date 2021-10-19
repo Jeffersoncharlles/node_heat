@@ -57,31 +57,31 @@ class AuthenticateUserService {
             }
         });
 
-        if (!user) {
-          user =  await prismaClient.user.create({
+        if(!user) {
+            user = await prismaClient.user.create({
                 data:{
                     github_id:id,
                     login,
                     avatar_url,
-                    name
-                }
-            });
+                    name,
+                },
+            })
         }
 
         const token = sign(
                 {
                     user:{
-                        name:user.name,
-                        avatar_url:user.avatar_url,
-                        id:user.id
+                        name: user.name,
+                        avatar_url: user.avatar_url,
+                        id: user.id
                     }
                 },
-                process.env.JWT_SECRET_KEY as string,
+                process.env.JWT_SECRET_KEY ,
                 {
                     subject:user.id,
                     expiresIn:"1d"
                 }
-            )
+        )
 
         return {token,user};
     }
